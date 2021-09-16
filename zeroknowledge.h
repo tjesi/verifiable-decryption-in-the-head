@@ -3,6 +3,7 @@
 #include <NTL/ZZX.h>
 #include <vector>
 
+#include "helperfunctions.h"
 #include "classes.h"
 
 using namespace std;

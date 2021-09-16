@@ -14,3 +14,4 @@ const long tau            = 100;
 const long mu             = 1.7*lambda;
 const double smallB       = 1;
 const long double largeB  = pow(2,51);
+const long rounds         = 100;
