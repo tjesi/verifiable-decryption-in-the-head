@@ -7,7 +7,7 @@ AUTOFLAGS=-std=c++11 -pthread -march=native
 
 LDLIBS=-lntl -lgmp -lm
 
-FILES= main.cpp cryptography.cpp sha2.cpp zeroknowledge.cpp protocol.cpp helperfunctions.cpp
+FILES= main.cpp encryption.cpp commitment.cpp sha2.cpp helperfunctions.cpp zeroknowledge.cpp protocol.cpp 
 
 run:
 	clear

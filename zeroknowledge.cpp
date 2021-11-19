@@ -1,6 +1,5 @@
 
-#include "helperfunctions.h"
-#include "classes.h"
+#include "zeroknowledge.h"
 #include "sha2.h"
 
 void CreateSingleProof(ProofMessage &proofMessage, const ZZ_pE &a, const Vec<ZZ_p> &secret){

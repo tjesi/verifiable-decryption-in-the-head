@@ -7,37 +7,18 @@
 #include <NTL/ZZ_pX.h>
 #include <NTL/ZZ_pE.h>
 #include "parameters.h"
+#include "commitment.h"
+#include "encryption.h"
 #include <vector>
 
 using namespace NTL;
 using namespace std;
 
-class Ciphertext {
-public:
-  ZZ_pE CTXu,CTXv;
-};
-
-class EncKey {
-public:
-  ZZ_pE PKa,PKb,SKs,SKe;
-};
-
-class ComKey {
-public:
-  ZZ_pE PK;
-};
-
-class Commitment {
-public:
-  ZZ_pE com,open,message;
-};
-
 class DecryptionShares {
 public:
-  Vec<ZZ_pE> t,noise;
+  Vec<ZZ_pE> m;
   DecryptionShares(){
-    t.SetLength(2);
-    noise.SetLength(2);
+    m.SetLength(2);
   }
 };
 
@@ -90,11 +71,10 @@ class Response {
 public:
   ZZ_pE secretShare, errorShare, pubKeyShare;
   ZZ_pE secretCom, errorCom, secretOpen, errorOpen;
-  Vec<ZZ_pE> partialDecryption, noiseShare;
+  Vec<ZZ_pE> partialDecryption;
 
   Response(){
     partialDecryption.SetLength(tau);
-    noiseShare.SetLength(tau);
   }
 };
 

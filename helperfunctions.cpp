@@ -1,11 +1,27 @@
 
-#include <NTL/ZZ_p.h>
-#include <NTL/ZZ_pE.h>
-#include <random>
-#include "sha2.h"
+#include "helperfunctions.h"
 
-using namespace std;
-using namespace NTL;
+string ZZ_pEToString(const ZZ_pE &z) {
+    string returnString = ""; long a;
+    ZZ_pX f = conv<ZZ_pX>(z);
+    for(int i = 0; i < N; i++){
+      conv(a,rep(coeff(f,i)));
+      returnString += to_string(a);
+    } return returnString;}
+
+void SampleBounded(ZZ_pE &r, const long &bound){
+  ZZ_pX f = ZZ_pX(INIT_MONO, N-1);
+  for(int i = 0; i < N; i++){
+    SetCoeff(f,i,RandomBnd(2*bound+1)-bound);
+  } r = to_ZZ_pE(f);}
+
+bool isBounded(const ZZ_pE &r, const double &bound){
+  ZZ b = ZZ(0);
+  ZZ_pX f = conv<ZZ_pX>(r);
+  for(int i = 0; i < N; i++){
+    ZZ t = conv<ZZ>(coeff(f,i));
+    if (t - (t > q/2)*q > b) { b = t; }
+  } return b <= ZZ(bound);}
 
 Vec<ZZ_p> PolyToVec(const ZZ_pE &input){
   Vec<ZZ_p> output; output.SetLength(input.degree());

@@ -1,10 +1,8 @@
 
-#include <NTL/ZZ_p.h>
-#include <NTL/ZZX.h>
-#include <vector>
-
-#include "helperfunctions.h"
+#include "commitment.h"
+#include "encryption.h"
 #include "classes.h"
+#include "helperfunctions.h"
 
 using namespace std;
 using namespace NTL;

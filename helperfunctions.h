@@ -1,9 +1,21 @@
 
 #include <NTL/ZZ_p.h>
 #include <NTL/ZZ_pE.h>
+#include "parameters.h"
+#include <random>
+#include <algorithm>
+#include "sha2.h"
 
 using namespace std;
 using namespace NTL;
+
+void Shuffle(ZZ_pE &);
+
+string ZZ_pEToString(const ZZ_pE &);
+
+void SampleBounded(ZZ_pE &, const long &);
+
+bool isBounded(const ZZ_pE &, const double &);
 
 Vec<ZZ_p> PolyToVec(const ZZ_pE &);
 

@@ -1,5 +1,5 @@
 
-#include "cryptography.h"
+#include "protocol.h"
 
 void InitializeDecryption(EncKey &encKey, ComKey &comKey, Vec<CommitMessage> &msg, Vec<Response> &resp){
   ZZ_p::init(ZZ(q));
@@ -22,19 +22,17 @@ void Deal(CommitMessage &msg, const EncKey &encKey, const ComKey &comKey){
 
   msg.pubKeyShare[0]
     = encKey.PKa*msg.secretShare[0] + ZZ_pE(p)*msg.errorShare[0];
-  msg.pubKeyShare[1]
-    = encKey.PKa*msg.secretShare[1] + ZZ_pE(p)*msg.errorShare[1];}
+  msg.pubKeyShare[1] = encKey.PKb - msg.pubKeyShare[0];}
 
 void Play(CommitMessage &msg, const int index, const Statement &stmt){
   for (int j = 0; j < tau; j++){
-    SampleBounded(msg.partialDecryptions[j].noise[index],largeB);
-    msg.partialDecryptions[j].t[index] = msg.secretShare[index]*stmt.ciphertexts[j].CTXu
-    +ZZ_pE(p)*msg.partialDecryptions[j].noise[index];}}
+    msg.partialDecryptions[j].m[index] = msg.secretShare[index]*stmt.ciphertexts[j].CTXu;
+    RoundModP(msg.partialDecryptions[j].m[index]);}}
 
 void CreateStatement(Statement &stmt, const EncKey &encKey){
   ZZ_pE m; Ciphertext ctx;
   for (int j = 0; j < tau; j++){
-    SampleMessage(m);Encrypt(ctx,encKey,m);
+    SampleMessage(m); Encrypt(ctx,encKey,m);
     stmt.messages[j] = m; stmt.ciphertexts[j] = ctx;}}
 
 void CreateCommitMessage(Vec<CommitMessage> &msg, string &hash, const EncKey &encKey, const ComKey &comKey, const Statement &stmt){
@@ -59,12 +57,13 @@ void CreateResponseMessage(Vec<Response> &resp, const Vec<CommitMessage> &msg, c
     resp[i].errorCom = msg[i].errorCom[1-index].com;
     resp[i].pubKeyShare = msg[i].pubKeyShare[1-index];
     for (int j = 0; j < tau; j++){
-      resp[i].partialDecryption[j] = msg[i].partialDecryptions[j].t[1-index];
-      resp[i].noiseShare[j] = msg[i].partialDecryptions[j].noise[index];}}}
+      resp[i].partialDecryption[j] = msg[i].partialDecryptions[j].m[1-index];}}}
 
-void VerifyResponseMessage(const Statement &stmt, const string hash, const BinaryChallenge &chlg, const Vec<Response> &resp, const ZZ_pE &encKeyPK, const ComKey &comKey){
-  Vec<CommitMessage> msg;msg.SetLength(lambda);
-  bool shortness = true;
+void VerifyResponseMessage(const Statement &stmt, const string hash,
+  const BinaryChallenge &chlg, const Vec<Response> &resp,
+  const ZZ_pE &encKeyPK, const ComKey &comKey){
+  Vec<CommitMessage> msg; msg.SetLength(lambda);
+  bool shortness = true; bool correctness = true;
   for (int i = 0; i < lambda; i++){
     int index = chlg.beta[i];
     msg[i].secretCom[index].com
@@ -81,13 +80,28 @@ void VerifyResponseMessage(const Statement &stmt, const string hash, const Binar
     msg[i].pubKeyShare[1-index]
       = resp[i].pubKeyShare;
     for (int j = 0; j < tau; j++){
-      msg[i].partialDecryptions[j].t[index]
-        = resp[i].secretShare*stmt.ciphertexts[j].CTXu
-        + ZZ_pE(p)*resp[i].noiseShare[j];
-      shortness = shortness and isBounded(resp[i].noiseShare[j],largeB);
-      msg[i].partialDecryptions[j].t[1-index] = resp[i].partialDecryption[j];
-    }
+      msg[i].partialDecryptions[j].m[index]
+        = resp[i].secretShare*stmt.ciphertexts[j].CTXu;
+      RoundModP(msg[i].partialDecryptions[j].m[index]);
+      msg[i].partialDecryptions[j].m[1-index] = resp[i].partialDecryption[j];
+      ZZ_pE message = stmt.ciphertexts[j].CTXv -  msg[i].partialDecryptions[j].m[0] - msg[i].partialDecryptions[j].m[1];
+      RoundModP(message);
+      if (!IsZero(stmt.messages[j]-message)){correctness = false;}}
   }
-  if (hash==HashCommitMessage(msg) and shortness){
+  if (hash==HashCommitMessage(msg) and shortness and correctness){
     cout << "Accept Decryption" << "\n";}
     else {cout << "Reject Decryption" << "\n";}}
+
+string HashCommitMessage(Vec<CommitMessage> &msg){
+  string returnString = "VerifiableDecryptionInTheHead";
+  for(int i=0; i < lambda; i++){
+    returnString += ZZ_pEToString(msg[i].pubKeyShare[0]);
+    returnString += ZZ_pEToString(msg[i].pubKeyShare[1]);
+    returnString += ZZ_pEToString(msg[i].secretCom[0].com);
+    returnString += ZZ_pEToString(msg[i].secretCom[1].com);
+    returnString += ZZ_pEToString(msg[i].errorCom[0].com);
+    returnString += ZZ_pEToString(msg[i].errorCom[1].com);
+    for(int j=0; j < tau; j++){
+      returnString += ZZ_pEToString(msg[i].partialDecryptions[j].m[0]);
+      returnString += ZZ_pEToString(msg[i].partialDecryptions[j].m[1]);
+}}  return sha256(returnString);}

@@ -1,5 +1,7 @@
 
-#include "cryptography.h"
+#include "encryption.h"
+#include "commitment.h"
+#include "classes.h"
 
 void InitializeDecryption(EncKey &, ComKey &, Vec<CommitMessage> &, Vec<Response> &);
 
@@ -16,3 +18,7 @@ void CreateChallenge(BinaryChallenge &);
 void CreateResponseMessage(Vec<Response> &, const Vec<CommitMessage> &, const BinaryChallenge &);
 
 void VerifyResponseMessage(const Statement &, const string , const BinaryChallenge &, const Vec<Response> &, const ZZ_pE &, const ComKey &);
+
+string HashCommitMessage(Vec<CommitMessage> &);
+
+bool CompareMessages(const Vec<CommitMessage> &, const Vec<CommitMessage> &);

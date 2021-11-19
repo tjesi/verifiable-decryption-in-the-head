@@ -10,8 +10,7 @@ void PrintProtocolTimings(const clock_t begin, const clock_t end){
   cout << "Ciphertexts: " << tau << "\n";
   cout << "\n";
   cout << "Proof time: " <<elapsed_secs << " sec\n";
-  cout << "Time / round: " <<elapsed_secs/(rounds*lambda) << " sec\n";
-  cout << "Time / ctx: " <<elapsed_secs/(rounds*lambda*tau) << " sec\n";
+  cout << "Time / ctx: " <<elapsed_secs/(lambda*tau) << " sec\n";
   cout << "\n";
 }
 
@@ -23,8 +22,7 @@ void PrintZKPTimings(const clock_t begin, const clock_t end){
   cout << "Number of proofs: " << 2*lambda << "\n";
   cout << "\n";
   cout << "Proof time: " <<elapsed_secs << " sec\n";
-  cout << "Time / proof: " <<elapsed_secs/(rounds*lambda) << " sec\n";
-  cout << "Time / round: " <<elapsed_secs/(2*rounds*lambda*mu) << " sec\n";
+  cout << "Time / proof: " <<elapsed_secs/(2*lambda*mu) << " sec\n";
   cout << "\n";
 }
 
@@ -53,19 +51,18 @@ int main()
   CreateStatement(stmt,encKey);
 
   begin = clock();
-  for (int i=0; i<rounds; i++){
   // Create the commit message
-  CreateCommitMessage(comMsg,hash,encKey,comKey,stmt);}
-  end = clock();
-
-  // Print parameters and timings
-  PrintProtocolTimings(begin,end);
+  CreateCommitMessage(comMsg,hash,encKey,comKey,stmt);
 
   // Create lambda binary challenges
   CreateChallenge(binaryChlg);
 
   // Create the response message
   CreateResponseMessage(resp,comMsg,binaryChlg);
+  end = clock();
+
+  // Print parameters and timings
+  PrintProtocolTimings(begin,end);
 
   // Verify the decryption proof
   VerifyResponseMessage(stmt,hash,binaryChlg,resp,encKey.PKa,comKey);
@@ -74,18 +71,17 @@ int main()
   InitializeZKProof(proofMessage,ternaryChlg,zkProof);
 
   begin = clock();
-  for (int i=0; i<rounds; i++){
-  CreateZKProofMessage(proofMessage, comKey.PK, comMsg, binaryChlg);}
-  end = clock();
-
-  // Print parameters and timings
-  PrintZKPTimings(begin,end);
+  CreateZKProofMessage(proofMessage, comKey.PK, comMsg, binaryChlg);
 
   // Create mu ternary challenges
   CreateTernaryChallenge(ternaryChlg);
 
   // Create the proof message
   CreateZKProof(zkProof, proofMessage, ternaryChlg);
+  end = clock();
+
+  // Print parameters and timings
+  PrintZKPTimings(begin,end);
 
   // Verify the shortness proof
   VerifyZKProof(zkProof, ternaryChlg, comKey.PK, resp);
