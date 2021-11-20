@@ -17,7 +17,8 @@ void CreateChallenge(BinaryChallenge &);
 
 void CreateResponseMessage(Vec<Response> &, const Vec<CommitMessage> &, const BinaryChallenge &);
 
-void VerifyResponseMessage(const Statement &, const string , const BinaryChallenge &, const Vec<Response> &, const ZZ_pE &, const ComKey &);
+void VerifyResponseMessage(const Statement &, const string , const
+   BinaryChallenge &, const Vec<Response> &, const ZZ_pE &, const ComKey &);
 
 string HashCommitMessage(Vec<CommitMessage> &);
 

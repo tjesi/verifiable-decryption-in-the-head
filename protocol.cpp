@@ -26,7 +26,8 @@ void Deal(CommitMessage &msg, const EncKey &encKey, const ComKey &comKey){
 
 void Play(CommitMessage &msg, const int index, const Statement &stmt){
   for (int j = 0; j < tau; j++){
-    msg.partialDecryptions[j].m[index] = msg.secretShare[index]*stmt.ciphertexts[j].CTXu;
+    msg.partialDecryptions[j].m[index] =
+    msg.secretShare[index]*stmt.ciphertexts[j].CTXu;
     RoundModP(msg.partialDecryptions[j].m[index]);}}
 
 void CreateStatement(Statement &stmt, const EncKey &encKey){
@@ -35,7 +36,8 @@ void CreateStatement(Statement &stmt, const EncKey &encKey){
     SampleMessage(m); Encrypt(ctx,encKey,m);
     stmt.messages[j] = m; stmt.ciphertexts[j] = ctx;}}
 
-void CreateCommitMessage(Vec<CommitMessage> &msg, string &hash, const EncKey &encKey, const ComKey &comKey, const Statement &stmt){
+void CreateCommitMessage(Vec<CommitMessage> &msg, string &hash,
+  const EncKey &encKey, const ComKey &comKey, const Statement &stmt){
   for (int i = 0; i < lambda; i++){
     Deal(msg[i],encKey,comKey);
     Play(msg[i],0,stmt);
@@ -46,7 +48,8 @@ void CreateChallenge(BinaryChallenge &chlg){
   for (int i = 0; i < lambda; i++){
     chlg.beta[i] = RandomBnd(2);}}
 
-void CreateResponseMessage(Vec<Response> &resp, const Vec<CommitMessage> &msg, const BinaryChallenge &chlg){
+void CreateResponseMessage(Vec<Response> &resp, const Vec<CommitMessage> &msg,
+  const BinaryChallenge &chlg){
   for (int i = 0; i < lambda; i++){
     int index = chlg.beta[i];
     resp[i].secretShare = msg[i].secretShare[index];
@@ -84,7 +87,8 @@ void VerifyResponseMessage(const Statement &stmt, const string hash,
         = resp[i].secretShare*stmt.ciphertexts[j].CTXu;
       RoundModP(msg[i].partialDecryptions[j].m[index]);
       msg[i].partialDecryptions[j].m[1-index] = resp[i].partialDecryption[j];
-      ZZ_pE message = stmt.ciphertexts[j].CTXv -  msg[i].partialDecryptions[j].m[0] - msg[i].partialDecryptions[j].m[1];
+      ZZ_pE message = stmt.ciphertexts[j].CTXv -
+      msg[i].partialDecryptions[j].m[0] - msg[i].partialDecryptions[j].m[1];
       RoundModP(message);
       if (!IsZero(stmt.messages[j]-message)){correctness = false;}}
   }
