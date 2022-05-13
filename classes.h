@@ -16,9 +16,9 @@ using namespace std;
 
 class DecryptionShares {
 public:
-  Vec<ZZ_pE> m;
+  Vec<ZZ_pE> t;
   DecryptionShares(){
-    m.SetLength(2);
+    t.SetLength(2);
   }
 };
 
@@ -71,10 +71,10 @@ class Response {
 public:
   ZZ_pE secretShare, errorShare, pubKeyShare;
   ZZ_pE secretCom, errorCom, secretOpen, errorOpen;
-  Vec<ZZ_pE> partialDecryption;
+  Vec<DecryptionShares> partialDecryptions;
 
   Response(){
-    partialDecryption.SetLength(tau);
+    partialDecryptions.SetLength(tau);
   }
 };
 

@@ -26,9 +26,10 @@ void Deal(CommitMessage &msg, const EncKey &encKey, const ComKey &comKey){
 
 void Play(CommitMessage &msg, const int index, const Statement &stmt){
   for (int j = 0; j < tau; j++){
-    msg.partialDecryptions[j].m[index] =
-    msg.secretShare[index]*stmt.ciphertexts[j].CTXu;
-    RoundModP(msg.partialDecryptions[j].m[index]);}}
+    ZZ_pE largeError; SampleBounded(largeError,largeB);
+    msg.partialDecryptions[j].t[index] =
+    msg.secretShare[index]*stmt.ciphertexts[j].CTXu
+    + ZZ_pE(p)*largeError;}}
 
 void CreateStatement(Statement &stmt, const EncKey &encKey){
   ZZ_pE m; Ciphertext ctx;
@@ -59,8 +60,7 @@ void CreateResponseMessage(Vec<Response> &resp, const Vec<CommitMessage> &msg,
     resp[i].secretCom = msg[i].secretCom[1-index].com;
     resp[i].errorCom = msg[i].errorCom[1-index].com;
     resp[i].pubKeyShare = msg[i].pubKeyShare[1-index];
-    for (int j = 0; j < tau; j++){
-      resp[i].partialDecryption[j] = msg[i].partialDecryptions[j].m[1-index];}}}
+    resp[i].partialDecryptions = msg[i].partialDecryptions;}}
 
 void VerifyResponseMessage(const Statement &stmt, const string hash,
   const BinaryChallenge &chlg, const Vec<Response> &resp,
@@ -83,15 +83,18 @@ void VerifyResponseMessage(const Statement &stmt, const string hash,
     msg[i].pubKeyShare[1-index]
       = resp[i].pubKeyShare;
     for (int j = 0; j < tau; j++){
-      msg[i].partialDecryptions[j].m[index]
-        = resp[i].secretShare*stmt.ciphertexts[j].CTXu;
-      RoundModP(msg[i].partialDecryptions[j].m[index]);
-      msg[i].partialDecryptions[j].m[1-index] = resp[i].partialDecryption[j];
+      msg[i].partialDecryptions[j].t[0]
+        = resp[i].partialDecryptions[j].t[0];
+      msg[i].partialDecryptions[j].t[1]
+        = resp[i].partialDecryptions[j].t[1];
+      ZZ_pE bounded = resp[i].partialDecryptions[j].t[index] - resp[i].secretShare*stmt.ciphertexts[j].CTXu;
       ZZ_pE message = stmt.ciphertexts[j].CTXv -
-      msg[i].partialDecryptions[j].m[0] - msg[i].partialDecryptions[j].m[1];
+      msg[i].partialDecryptions[j].t[0] - msg[i].partialDecryptions[j].t[1];
       RoundModP(message);
-      if (!IsZero(stmt.messages[j]-message)){correctness = false;}}
+      if (!IsZero(stmt.messages[j]-message) and isBounded(bounded,p*largeB))
+        {correctness = false;}}
   }
+
   if (hash==HashCommitMessage(msg) and shortness and correctness){
     cout << "Accept Decryption" << "\n";}
     else {cout << "Reject Decryption" << "\n";}}
@@ -106,6 +109,6 @@ string HashCommitMessage(Vec<CommitMessage> &msg){
     returnString += ZZ_pEToString(msg[i].errorCom[0].com);
     returnString += ZZ_pEToString(msg[i].errorCom[1].com);
     for(int j=0; j < tau; j++){
-      returnString += ZZ_pEToString(msg[i].partialDecryptions[j].m[0]);
-      returnString += ZZ_pEToString(msg[i].partialDecryptions[j].m[1]);
+      returnString += ZZ_pEToString(msg[i].partialDecryptions[j].t[0]);
+      returnString += ZZ_pEToString(msg[i].partialDecryptions[j].t[1]);
 }}  return sha256(returnString);}
